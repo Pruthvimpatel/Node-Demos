@@ -12,7 +12,11 @@ export const ERROR_MESSAGES = {
     PERMISSION_DENIED: 'You do not have permission to update this product',
     SOMETHING_ERROR: 'Something went wrong',
     TOKEN_PASSWORD_REQUIRED: 'Token and Password required',
-    INVALID_RESET_TOKEN: 'Invalid reset token'
+    INVALID_RESET_TOKEN: 'Invalid reset token',
+    FILE_REQUIRED: 'Files required',
+    PROFILE_UPLOAD_FAILED: 'Profile upload failed',
+    UPDATE_USER_FAILED: 'Updated User failed',
+    CATEGORY_NOT_FOUND: 'Category not found.'
 };
 
 export const SUCCESS_MESSAGES = {
@@ -24,5 +28,10 @@ export const SUCCESS_MESSAGES = {
     PRODUCTS_RETRIEVED: 'Products getting successfully',
     PRODUCT_DELETED: 'Product deleted successfully',
     PRODUCT_UPDATED: 'Product updated successfully',
-    RESET_PASSWORD_EMAIL_SENT: 'Reset Password Email sent successfully'
+    RESET_PASSWORD_EMAIL_SENT: 'Reset Password Email sent successfully',
+    PROFILE_UPDATED_SUCCESSFULLY: 'Profile updated successfully.',
+    CATEGORY_CREATED: 'Category created successfully.',
+    CATEGORY_RETRIEVED: 'Category retrieved successfully.',
+    CATEGORY_DELETED: 'Category deleted successfully',
+    CATEGORY_UPDATED: 'Category updated successfully',
 };

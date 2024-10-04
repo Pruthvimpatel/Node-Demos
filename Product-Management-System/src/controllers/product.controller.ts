@@ -17,7 +17,6 @@ interface NewRequest extends Request{
 //create-product
 export const createProduct = asyncHandler(async(req:NewRequest , res: Response, next: NextFunction) => {
     const {name,price,description} = req.body;
-    console.log("user");
     const user = req.user;
     if(!user) {
         return next(new ApiError(401,ERROR_MESSAGES.USER_NOT_FOUND));
@@ -26,14 +25,23 @@ export const createProduct = asyncHandler(async(req:NewRequest , res: Response, 
     if(!name || !price || !description) {
         return next(new ApiError(401,ERROR_MESSAGES.REQUIRED_FIELDS));
     }
-
     try {
+     const category = await db.Category.findOne({
+        where: {
+            userId: user.id,
+        }
+     })
+     if(!category) {
+        return next(new ApiError(404,ERROR_MESSAGES.CATEGORY_NOT_FOUND));
+     }
         const product = await db.Product.create({
             name,
             price,
             description,
+            categoryId:category.id,
             userId: user.id
         });
+        
         const response = new ApiResponse(201,product,SUCCESS_MESSAGES.PRODUCT_CREATED);
         res.status(200).json(response);
     } catch(error) {
@@ -41,7 +49,6 @@ export const createProduct = asyncHandler(async(req:NewRequest , res: Response, 
         return next(new ApiError(500,ERROR_MESSAGES.INTERNAL_SERVER_ERROR,[error]));
     }
 })
-
 
 //list
 export const getProducts = asyncHandler(async(req:NewRequest, res: Response, next: NextFunction) => {
@@ -51,10 +58,34 @@ export const getProducts = asyncHandler(async(req:NewRequest, res: Response, nex
     {
         return next(new ApiError(401, ERROR_MESSAGES.USER_NOT_FOUND));
     }
+
+   const page = parseInt(req.query.page as string) || 1;
+   const limit = parseInt(req.query.limit as string) || 10;
+   const offset = (page-1) * limit; 
     try {
-        const product = await db.Product.findAll({where:{userId:user.id}});
-        const response = new ApiResponse(200,product,SUCCESS_MESSAGES.PRODUCTS_RETRIEVED);
-        res.status(200).json(response);
+     
+       const {rows:products, count: totalProducts} = await db.Product.findAndCountAll({
+        where: {
+            userId: user.id
+        },
+        limit,
+        offset
+       });
+       const totalPages = Math.ceil(totalProducts/limit);
+       const response = new ApiResponse(200, {
+        products,
+        pagination: {
+            totalProducts,
+            totalPages,
+            currentPage: page,
+            pageSize: limit
+        }
+       }, SUCCESS_MESSAGES.PRODUCTS_RETRIEVED);
+
+       res.status(200).json(response)
+        //const product = await db.Product.findAll({where:{userId:user.id}});
+        // const response = new ApiResponse(200,product,SUCCESS_MESSAGES.PRODUCTS_RETRIEVED);
+        // res.status(200).json(response);
     } catch(error) {
         console.error(ERROR_MESSAGES.SOMETHING_ERROR, error);
         return next(new ApiError(500, ERROR_MESSAGES.INTERNAL_SERVER_ERROR, [error]));
@@ -65,9 +96,7 @@ export const getProducts = asyncHandler(async(req:NewRequest, res: Response, nex
 //update-product
 export const updateProducts = asyncHandler(async(req:NewRequest,res:Response,next:NextFunction) => {
     const {id} = req.params;
-    console.log("id",req.params.id)
     const user = req.user;
-    console.log("user",user);
     if (!user) {
         return next(new ApiError(401, ERROR_MESSAGES.USER_NOT_FOUND));
     }
@@ -125,4 +154,6 @@ res.status(200).json(response);
     return next(new ApiError(500, ERROR_MESSAGES.INTERNAL_SERVER_ERROR, [error]));
 }
 });
+
+
 

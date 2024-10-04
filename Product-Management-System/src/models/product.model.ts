@@ -10,6 +10,7 @@ export interface ProductModelCreationAttributes {
 export interface ProductModelAttributes extends ProductModelCreationAttributes {
     id: string;
     userId: string;
+    categoryId: string;
 }
 
 export default class Product extends Model<InferAttributes<Product>, InferCreationAttributes<Product>> {
@@ -18,7 +19,7 @@ export default class Product extends Model<InferAttributes<Product>, InferCreati
     declare description: string;
     declare price: number;
     declare userId: CreationOptional<string>;
-
+    declare categoryId: CreationOptional<string>;
     static associate: (models: typeof db) => void;
 
 }
@@ -44,6 +45,10 @@ export const product = (sequelize: Sequelize.Sequelize, DataTypes: typeof Sequel
                 type: DataTypes.UUID,
                 allowNull: false
             },
+            categoryId: {
+                type: DataTypes.UUID,
+                allowNull: false
+            }
             
         },
         {
@@ -62,7 +67,15 @@ export const product = (sequelize: Sequelize.Sequelize, DataTypes: typeof Sequel
             foreignKey: 'userId',
             targetKey: 'id',
         })
+
+
+    Product.belongsTo(models.Category, {
+        foreignKey: 'categoryId',
+        targetKey: 'id',
+        }) 
     };
+
+    
 
     return Product;
 };

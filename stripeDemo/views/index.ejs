@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Plans</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            color: #333;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 40px;
+            color: #444;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .plan {
+            border: none;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px;
+            background-color: #fff;
+            display: inline-block;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .plan:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .plan h2 {
+            font-size: 1.8em;
+            color: #0275d8;
+            margin-bottom: 20px;
+        }
+
+        .plan p {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: #555;
+        }
+
+        .plan p b {
+            font-size: 2em;
+            color: #0275d8;
+        }
+
+        .plan a {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            color: #fff;
+            background: linear-gradient(135deg, #0275d8, #5bc0de);
+            text-decoration: none;
+            border-radius: 25px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .plan a:hover {
+            background: linear-gradient(135deg, #025aa5, #4aabd8);
+        }
+
+        /* Add responsiveness */
+        @media (max-width: 768px) {
+            .plan {
+                width: 90%;
+                margin: 20px auto;
+            }
+
+            h1 {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Choose Your Plan</h1>
+    
+    <div class="plan">
+        <h2>Starter Plan</h2>
+        <p><b>$20/month</b></p>
+        <p>Perfect for individuals or small teams to get started.</p>
+        <a href="/subscribe?plan=starter">Get Started</a>
+    </div>
+
+    <div class="plan">
+        <h2>Pro Plan</h2>
+        <p><b>$40/month</b></p>
+        <p>Great for growing teams needing more features.</p>
+        <a href="/subscribe?plan=pro">Go Pro</a>
+    </div>
+
+    <div class="plan">
+        <h2>Customize Plan</h2>
+        <p><b>Contact Us for Pricing</b></p>
+        <p>Fully customizable to meet your specific business needs.</p>
+        <a href="/subscribe?plan=customize">Contact Us</a>
+    </div>
+</body>
+</html>

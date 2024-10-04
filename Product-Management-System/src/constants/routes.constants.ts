@@ -4,7 +4,9 @@ export const USER_ROUTES = {
     LOGOUT: '/logout',
     CHANGE_PASSWORD: '/change-password',
     RESET_PASSWORD: '/reset-password',
-    UPDATE_PASSWORD: '/update-password'
+    UPDATE_PASSWORD: '/update-password',
+    UPLOAD_PROFILE:'/upload-profile',
+    UPDATE_PROFILE: '/update-profile'
 };
 
 export const PRODUCT_ROUTES = {
@@ -14,9 +16,18 @@ export const PRODUCT_ROUTES = {
     UPDATE: '/update-product/:id',
 };
 
+export const CATEGORY_ROUTES = {
+    CREATE: '/create-category',
+    GET: '/get-category',
+    DELETE: '/delete-category/:id',
+    UPDATE: '/update-category/:id',
+    GET_BY_PRODUCT: '/get-product-by-category/:id'
+}
+
 export const BASE_API_ROUTES = {
     USERS: '/users',
     PRODUCTS: '/products',
+    CATEGORIES: '/categories'
 };
 
 export const REST_API_PREFIX = {

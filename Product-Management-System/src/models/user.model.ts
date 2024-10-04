@@ -12,6 +12,7 @@ export interface UserModelAttribtes extends UserModelCreationAttributes {
     id: string;
     firstName: string;
     lastName: string;
+    profilePicture?: string | null;
 }
 
 export default class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
@@ -20,6 +21,7 @@ export default class User extends Model<InferAttributes<User>, InferCreationAttr
     declare password: string;
     declare firstName: CreationOptional<string>;
     declare lastName: CreationOptional<string>;
+    declare profilePicture: CreationOptional<string | null>
 
     static associate: (models: typeof db) => void;
 
@@ -56,6 +58,10 @@ export const user = (sequelize: Sequelize.Sequelize,DataTypes:typeof Sequelize.D
                 type: DataTypes.STRING,
                 allowNull: false
             },
+            profilePicture: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            }
         },
         {
             sequelize,

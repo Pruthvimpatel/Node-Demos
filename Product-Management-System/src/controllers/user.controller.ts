@@ -10,31 +10,32 @@ import User from "../models/user.model";
 import {ERROR_MESSAGES,SUCCESS_MESSAGES} from '../constants/messages';
 import {sendResetPasswordEmail} from '../utils/send-email';
 import sequelize from "sequelize";
-
+import uploadOnCloudinary from '../utils/cloudinary';
 
 interface MyUserRequest extends Request{
     token?: string;
     user?: User;
   }
 
- export const registerUser = asyncHandler(async(req:Request,res:Response,next:NextFunction) => {
-    const{email,password,firstName,lastName} = req.body;
-
-    if(!email || !password || !firstName || !lastName) {
-        return next(new ApiError(400,ERROR_MESSAGES.REQUIRED_FIELDS));
-    }
-
-    try {
-   const newUser = await db.User.create({email,password,firstName,lastName});
-   console.log("newUser",newUser);
-   const response = new ApiResponse(201,newUser,SUCCESS_MESSAGES.USER_CREATED);
-   console.log("response",response);
-   res.status(201).json(response);
-    } catch(error) {
-        console.error(ERROR_MESSAGES.SOMETHING_ERROR,error);
-        return next(new ApiError(500,ERROR_MESSAGES.INTERNAL_SERVER_ERROR,[error]));
-    }
- })
+  export const registerUser = asyncHandler(async(req:Request,res:Response,next:NextFunction) => {
+      const{email,password,firstName,lastName} = req.body;
+      if(!email || !password || !firstName || !lastName) {
+          return next(new ApiError(400,ERROR_MESSAGES.REQUIRED_FIELDS));
+      }
+  try {
+    const newUser = await db.User.create({email,
+      password,
+      firstName,
+      lastName,
+  });
+    const response = new ApiResponse(201,newUser,SUCCESS_MESSAGES.USER_CREATED);
+    console.log("response",response);
+    res.status(201).json(response);
+      } catch(error) {
+          console.error(ERROR_MESSAGES.SOMETHING_ERROR,error);
+          return next(new ApiError(500,ERROR_MESSAGES.INTERNAL_SERVER_ERROR,[error]));
+      }
+  })
 
 
  export const loginUser = asyncHandler(async(req:Request,res:Response,next:NextFunction) => {
@@ -206,5 +207,82 @@ export const updatePassword = asyncHandler(async(req:Request,res:Response,next:N
     console.error(ERROR_MESSAGES.SOMETHING_ERROR, error);
     return next(new ApiError(500, ERROR_MESSAGES.INTERNAL_SERVER_ERROR, [error]));
 }
+
+})
+
+
+export const uploadProfile = asyncHandler(async(req:MyUserRequest, res: Response,next: NextFunction):Promise<void> => {
+  const profilePicture = req.file?.path;
+  const user = req.user;
+
+  if (!user) {
+    return next(new ApiError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+}
+
+if(!profilePicture) {
+  return next(new ApiError(404, ERROR_MESSAGES.FILE_REQUIRED));
+
+}
+
+try {
+  const profile = await uploadOnCloudinary(profilePicture);
+  if(!profile || !profile.url) {
+    return next(new ApiError(404, ERROR_MESSAGES.PROFILE_UPLOAD_FAILED));
+  }
+
+  user.profilePicture = profile.url;
+  await user.save();
+
+  res.status(200).json(new ApiResponse(200,user,SUCCESS_MESSAGES.PROFILE_UPDATED_SUCCESSFULLY));
+  return;
+} catch(error) {
+  return next(new ApiError(500, ERROR_MESSAGES.INTERNAL_SERVER_ERROR,[error]));
+}
+
+})
+
+export const updateProfile = asyncHandler(async(req:MyUserRequest,res:Response,next:NextFunction): Promise<void> => {
+ 
+  const {email,password,firstName,lastName} = req.body;
+  const profilePicture = req.file?.path;
+  const user = req.user;
+
+  if (!user) {
+    return next(new ApiError(404, ERROR_MESSAGES.USER_NOT_FOUND));
+}
+  try {
+    let profileImageUrl: string | undefined;
+    if(profilePicture) {
+      const profile = await uploadOnCloudinary(profilePicture);
+      if(!profile || !profile.url) {
+        return next(new ApiError(400, ERROR_MESSAGES.PROFILE_UPLOAD_FAILED));
+      }
+      profileImageUrl =profile.url;
+    }
+
+    const updateUser = await db.User.update(
+      {
+          email,
+          password,
+          firstName,
+          lastName,
+          profilePicture:profileImageUrl
+      },
+      {
+        where: {
+          id: user.id
+        },
+        returning: true,
+      }
+    );
+    if(!updateProfile) {
+      return next(new ApiError(404, ERROR_MESSAGES.UPDATE_USER_FAILED));
+    }
+ 
+    res.status(200).json(new ApiResponse(200,updateUser[1][0],SUCCESS_MESSAGES.PROFILE_UPDATED_SUCCESSFULLY))
+    return;
+  } catch(error) {
+    return next(new ApiError(500,ERROR_MESSAGES.INTERNAL_SERVER_ERROR,[error]))
+  }
 
 })

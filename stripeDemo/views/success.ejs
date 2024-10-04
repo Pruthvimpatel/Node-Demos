@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #5cb85c;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 10px 0;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #0275d8;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        a:hover {
+            background-color: #025aa5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Subscription Successful!</h1>
+    <p>Thank you for subscribing! Your subscription is now active.</p>
+    <p><strong>Session ID:</strong> <%= session.id %></p>
+    <p><strong>Subscription Status:</strong> <%= session.subscription.status %></p>
+    <p><strong>Plan:</strong> <%= session.subscription.plan.product.name %></p>
+    <a href="/">Return to Homepage</a>
+</body>
+</html>
