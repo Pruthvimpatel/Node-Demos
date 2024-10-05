@@ -1,7 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { name } = require('ejs');
 const db = require('../models/index');
-const { where } = require('sequelize');
+const { ERROR_MESSAGE, SUCCESS_MESSAGE } = require('../constant/message');
 const Product = db.product;
 const Subscription = db.subscription;
 
@@ -11,14 +11,16 @@ exports.renderHomepage = (req, res) => {
 };
 
 
+
 exports.subscribe = async (req, res) => {
     const { plan, userId } = req.query;
 
     if (!plan || !userId) {
-        return res.send("Subscription plan or user ID not found");
+        return res.status(400).json({ message: ERROR_MESSAGE.REQUIRED_FIELDS });
     }
 
     let priceId;
+    const MAX_ATTEMPTS = 3;
 
     try {
         const product = await Product.findOne({
@@ -26,15 +28,37 @@ exports.subscribe = async (req, res) => {
         });
 
         if (!product) {
-            return res.send("Invalid subscription plan");
+            return res.status(400).json({ message: ERROR_MESSAGE.PRODUCT_NOT_FOUND });
         }
 
         priceId = product.stripePriceId;
 
         if (!priceId) {
-            return res.send("Price ID not found for this plan");
+            return res.status(400).json({ message: ERROR_MESSAGE.PRICEID_NOT_FOUND });
         }
 
+        // check if user has previous subscription attempt
+
+        let subscription = await Subscription.findOne({
+            where: {
+                userId,
+                plan
+            }
+        });
+        if(subscription) {
+            if(subscription.attempts >= MAX_ATTEMPTS) {
+                return res.status(400).json({ message: ERROR_MESSAGE.SUBSCRIPTION_LIMIT_REACHED });
+            }
+        } else {
+            subscription = await Subscription.create({
+                stripePriceId: null,
+                userId,
+                status: 'pending',
+                plan: plan.toLowerCase(),
+                attempts: 0
+            });
+        }
+        
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
             line_items: [{
@@ -45,16 +69,15 @@ exports.subscribe = async (req, res) => {
             cancel_url: `${process.env.BASE_URL}/cancel`,
         });
 
-        // Store subscription details in the database with 'pending' status
         await Subscription.create({
             stripeSubscriptionId: session.id,
             userId,
-            status: 'pending', // Initial status before payment confirmation
+            status: 'pending',
             plan: plan.toLowerCase()
         });
         res.redirect(session.url);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: ERROR_MESSAGE.INTERNAL_SERVER_ERROR, error: error.message });
     }
 };
 
@@ -65,11 +88,10 @@ exports.success = async (req,res) => {
         const session = await stripe.checkout.sessions.retrieve(sessionId, {
             expand: ['subscription','subscription.plan.product']
         });
-     console.log(session.subscription);
         const subscriptionId = session.subscription ? session.subscription.id : null;
 
         if(!subscriptionId) {
-            throw new Error("Subscription ID not found");
+            res.status(400).json({ message: ERROR_MESSAGE.SUBSCRIPTION_NOT_FOUND});
         }
 
        await Subscription.update({
@@ -85,7 +107,7 @@ exports.success = async (req,res) => {
     
     res.render('success', {session});
     } catch (error) {
-        res.status(500).json({error: error.message});
+        res.status(500).json({ message: ERROR_MESSAGE.INTERNAL_SERVER_ERROR, error: error.message });
     }
 };
 
@@ -105,8 +127,8 @@ try {
 
 res.render('cancel');
 } catch(error) {
-    res.status(500).json({error: error.message});
- }
+    res.status(500).json({ message: ERROR_MESSAGE.INTERNAL_SERVER_ERROR, error: error.message });
+}
 };
 
 
@@ -114,7 +136,7 @@ exports.manageCustomer = async (req, res) => {
     const { customerId } = req.params;
 
     if (!customerId) {
-        return res.status(400).json({ error: "Customer ID is required" });
+        res.status(400).json({ message: ERROR_MESSAGE.CUSTOMER_NOT_FOUND });
     }
 
     try {
@@ -124,7 +146,7 @@ exports.manageCustomer = async (req, res) => {
         });
         res.redirect(portalSession.url);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: ERROR_MESSAGE.INTERNAL_SERVER_ERROR, error: error.message });
     }
 };
 
