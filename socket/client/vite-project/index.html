@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #messages {
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        #message-input {
+            display: flex;
+        }
+        #message {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        #send-button {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Socket.IO Chat Demo</h1>
+    <div id="messages"></div>
+    <div id="message-input">
+        <input type="text" id="message" placeholder="Type your message" />
+        <button id="send-button">Send</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Send message on button click
+        document.getElementById('send-button').onclick = () => {
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value;
+
+            if (message) {
+                socket.emit('send_message', message); // Emit the message to the server
+                messageInput.value = ''; // Clear the input field
+            }
+        };
+
+        // Receive message from the server
+        socket.on('receive_message', (message) => {
+            const messagesDiv = document.getElementById('messages');
+            const newMessage = document.createElement('div');
+            newMessage.textContent = message; // Display the message
+            messagesDiv.appendChild(newMessage);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll to the bottom
+        });
+    </script>
+</body>
+</html>
